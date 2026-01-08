@@ -1,0 +1,23 @@
+# --- Data ---
+data/raw/
+data/derived/
+data/spatial/
+
+# Allow de-identified data only
+!data/deid/
+
+# --- Outputs ---
+outputs/
+
+# --- Local documents ---
+documents/
+
+# --- R / OS ---
+.Rhistory
+.RData
+.Rproj.user/
+.DS_Store
+
+# --- Secrets ---
+.env
+.Renviron
