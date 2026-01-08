@@ -1,23 +1,49 @@
-# --- Data ---
+# --------------------
+# Local-only folders
+# --------------------
+documents/
+outputs/
+
 data/raw/
 data/derived/
 data/spatial/
 
 # Allow de-identified data only
 !data/deid/
+!data/deid/**
 
-# --- Outputs ---
-outputs/
-
-# --- Local documents ---
-documents/
-
-# --- R / OS ---
+# --------------------
+# R / RStudio
+# --------------------
 .Rhistory
 .RData
+.Ruserdata
 .Rproj.user/
-.DS_Store
-
-# --- Secrets ---
-.env
 .Renviron
+
+# --------------------
+# R Markdown / knitr
+# --------------------
+*_cache/
+*_files/
+*.utf8.md
+*.knit.md
+
+# --------------------
+# Build / check artefacts
+# --------------------
+*.tar.gz
+*.Rcheck/
+
+# --------------------
+# Auth / secrets
+# --------------------
+.httr-oauth
+.env
+
+# --------------------
+# OS / editor
+# --------------------
+.DS_Store
+.vscode/
+.idea/
