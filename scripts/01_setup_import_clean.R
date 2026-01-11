@@ -147,5 +147,5 @@ data_deid <- dat %>%
     TRUE ~ race
   ), levels = c("Pardo","White/Other","Black"))) # collapsed other and race categories due to small number of observations
 
-write_csv(data_deid, "data/derived/Toxo2003_full_cleaned_data_deid.csv")
-saveRDS(data_deid, "data/derived/Toxo2003_full_cleaned_data_deid.rds")
+write_csv(data_deid, "data/derived/deid/Toxo2003_full_cleaned_data_deid.csv")
+saveRDS(data_deid, "data/derived/deid/Toxo2003_full_cleaned_data_deid.rds")
