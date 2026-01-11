@@ -4,13 +4,16 @@
 documents/
 outputs/
 
-data/raw/
-data/derived/
-data/spatial/
+data/**
 
-# Allow de-identified data only
+# Allow de-identified derived data only
+!data/derived/
 !data/derived/deid/
 !data/derived/deid/**
+
+# Explicitly keep other data private
+data/raw/
+data/spatial/
 
 # --------------------
 # R / RStudio
