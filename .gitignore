@@ -9,8 +9,8 @@ data/derived/
 data/spatial/
 
 # Allow de-identified data only
-!data/deid/
-!data/deid/**
+!data/derived/deid/
+!data/derived/deid/**
 
 # --------------------
 # R / RStudio
