@@ -12,21 +12,20 @@ The study investigates demographic, socioeconomic, environmental, and behavioura
 
 ```text
 ├── data/
-│   ├── raw/                  # Original input data (not public)
-│   ├── derived/              # Cleaned analysis datasets (only de-identified version public)
-│   └── spatial/              # Study area shapefiles (not public)
-│
+│   ├── raw/                # Original input data (not public)
+│   ├── spatial/            # Study area shapefiles (not public)
+│   └── derived/            # All derived analysis datasets (not public except deid)
+│       └── deid/           # De-identified analysis datasets (public)
 ├── scripts/
 │   ├── 01_setup_import_clean.R
 │   ├── 02_seroprev_serocatalytic.R
 │   ├── 03_descriptive_gams_regression.R
 │   └── 04_spatial_analysis.R
-│
-├── outputs/                  # Model outputs (not public)
+├── outputs/                # Model outputs, figures, tables (not public)
 │   ├── figures/
 │   ├── tables/
 │   └── models/
-│
+├── documents/              # Manuscripts / internal docs (not public)
 └── README.md
 ```
 
