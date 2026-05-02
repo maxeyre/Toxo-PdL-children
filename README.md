@@ -19,8 +19,9 @@ The study investigates demographic, socioeconomic, environmental, and behavioura
 ├── scripts/
 │   ├── 01_setup_import_clean.R
 │   ├── 02_seroprev_serocatalytic.R
-│   ├── 03_descriptive_gams_regression.R
-│   └── 04_spatial_analysis.R
+│   ├── 03_female_piecewise_foi_sensitivity.R
+│   ├── 04_descriptive_gams_regression.R
+│   └── 05_spatial_analysis.R
 ├── outputs/                # Model outputs, figures, tables (not public)
 │   ├── figures/
 │   ├── tables/
@@ -62,7 +63,31 @@ The study investigates demographic, socioeconomic, environmental, and behavioura
 
 ---
 
-### `03_descriptive_gams_regression.R`
+### `03_female_piecewise_foi_sensitivity.R`
+**Purpose**
+1. Conduct a sensitivity analysis for age-dependent exposure among female participants
+2. Fit an individual-level piecewise serocatalytic model
+3. Allow the force of infection (FOI) to differ before and after age 12
+4. Estimate pre- and post-12 FOI, annual infection probabilities, and posterior evidence for reduced exposure after age 12
+5. Generate model diagnostics and fit metrics 
+
+**Key methods**
+- Individual-level Bayesian serocatalytic model fitted using JAGS
+- Piecewise cumulative hazard model with separate FOI parameters before and after age 12
+- Posterior estimation of the difference and ratio between post-12 and pre-12 FOI
+- Posterior probability that post-12 FOI is lower than pre-12 FOI
+- Model assessment using WAIC, LOO, DIC, and MCMC diagnostics
+
+**Outputs**
+- Posterior summaries for pre- and post-12 FOI
+- Annual infection probabilities before and after age 12
+- Posterior probability that FOI declines after age 12
+- MCMC trace plots and summary tables
+- WAIC, LOO, and DIC model fit metrics
+  
+---
+
+### `04_descriptive_gams_regression.R`
 **Purpose**
 1. Generate descriptive Table 1 (overall and seropositive populations)  
 2. Explore non-linear associations using univariable GAM smooths  
@@ -83,7 +108,7 @@ The study investigates demographic, socioeconomic, environmental, and behavioura
 
 ---
 
-### `04_spatial_analysis.R`
+### `05_spatial_analysis.R`
 **Purpose**
 - Select predictors for spatial prediction  
 - Build a fine-resolution prediction grid  
