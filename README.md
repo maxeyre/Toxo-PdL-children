@@ -65,11 +65,11 @@ The study investigates demographic, socioeconomic, environmental, and behavioura
 
 ### `03_female_piecewise_foi_sensitivity.R`
 **Purpose**
-1. Conduct a sensitivity analysis for age-dependent exposure among female participants
-2. Fit an individual-level piecewise serocatalytic model
-3. Allow the force of infection (FOI) to differ before and after age 12
-4. Estimate pre- and post-12 FOI, annual infection probabilities, and posterior evidence for reduced exposure after age 12
-5. Generate model diagnostics and fit metrics 
+- Conduct a sensitivity analysis for age-dependent exposure among female participants
+- Fit an individual-level piecewise serocatalytic model
+- Allow the force of infection (FOI) to differ before and after age 12
+- Estimate pre- and post-12 FOI, annual infection probabilities, and posterior evidence for reduced exposure after age 12
+- Generate model diagnostics and fit metrics 
 
 **Key methods**
 - Individual-level Bayesian serocatalytic model fitted using JAGS
@@ -89,11 +89,11 @@ The study investigates demographic, socioeconomic, environmental, and behavioura
 
 ### `04_descriptive_gams_regression.R`
 **Purpose**
-1. Generate descriptive Table 1 (overall and seropositive populations)  
-2. Explore non-linear associations using univariable GAM smooths  
-3. Fit univariable mixed-effects logistic regression models  
-4. Fit DAG-informed multivariable mixed-effects models  
-5. Compute E-values and generate forest plots  
+- Generate descriptive Table 1 (overall and seropositive populations)
+- Explore non-linear associations using univariable GAM smooths
+- Fit univariable mixed-effects logistic regression models
+- Fit DAG-informed multivariable mixed-effects models
+- Compute E-values and generate forest plots  
 
 **Key methods**
 - Logistic mixed-effects models with household random intercepts  
