@@ -662,6 +662,12 @@ m_cat <- fit_glmer(toxo_igg ~ cat + agegroup + race + scale(income_pcap) + (1|hh
 gcomp_cat <- gcomp_binary(m_cat, dat %>% filter(!is.na(cat)), var = "cat")
 print(gcomp_cat)
 
+# G-computation for the sewer contact variable
+m_sewer <- fit_glmer(toxo_igg ~ contact_sewerwater + hh_floods + veg + scale(dist_sewer) + scale(dist_road) +
+                       agegroup + sex + race + scale(income_pcap) + scale(elevation) + (1|hh_id),
+                   dat %>% filter(!is.na(contact_sewerwater)))
+gcomp_sewer <- gcomp_binary(m_sewer, dat %>% filter(!is.na(contact_sewerwater)), var = "contact_sewerwater")
+print(gcomp_sewer)
 
 ## Forest plot
 domain_cols <- c(
