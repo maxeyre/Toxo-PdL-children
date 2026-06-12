@@ -3,10 +3,10 @@
 ################################################################################
 
 # -------------------------------------------------------------------------
-# Script: 02_seroprev_serocatalytic.R
+# Script: 02_seroprev_serocatalytic_individual.R
 #
 # Purpose:
-# Estimate age- and sex-specific seroprevalence and fit Bayesian serocatalytic
+# Estimate age- and sex-specific seroprevalence and fit individual-level Bayesian serocatalytic
 # models to estimate the force of infection.
 #
 # Inputs:
