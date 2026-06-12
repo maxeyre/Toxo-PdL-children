@@ -63,6 +63,11 @@ The study investigates demographic, socioeconomic, environmental, and behavioura
 
 ---
 
+### `02_seroprev_serocatalytic_individual.R`
+Same as 02_seroprev_serocatalytic.R but for individual-level age data.
+
+---
+
 ### `03_female_piecewise_foi_sensitivity.R`
 **Purpose**
 - Conduct a sensitivity analysis for age-dependent exposure among female participants
