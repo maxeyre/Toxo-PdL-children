@@ -42,6 +42,7 @@ dat <- readRDS("data/derived/Toxo2003_full_cleaned_data.rds")
 ## 2. Seroprevalence by sex x agegroup (binomial CIs) ####
 ## ------------------------------------------------------
 
+# Group by 1-year age
 seroDatGrouped <- dat %>%
   group_by(sex, age) %>%
   summarise(
@@ -55,12 +56,68 @@ seroDatGrouped <- dat %>%
   arrange(sex, age) %>%
   mutate(sex = relevel(sex, ref="Male"))
 
+# Function to make age grouped data for neater plotting (e.g. for 3-year age groups)
+make_obs_age_groups <- function(df, width = 3, min_age = 4, max_age = 18) {
+  
+  breaks <- seq(min_age, max_age + 1, by = width)
+  
+  if (tail(breaks, 1) < max_age + 1) {
+    breaks <- c(breaks, max_age + 1)
+  }
+  
+  age_levels <- tibble(
+    age_min = head(breaks, -1),
+    age_max = tail(breaks, -1) - 1,
+    midpoint = (age_min + age_max) / 2,
+    agegroup = paste0(age_min, "-", age_max)
+  ) %>%
+    filter(age_min <= max_age) %>%
+    mutate(
+      age_max = pmin(age_max, max_age),
+      midpoint = (age_min + age_max) / 2,
+      agegroup = paste0(age_min, "-", age_max)
+    ) %>%
+    arrange(midpoint)
+  
+  df %>%
+    mutate(
+      agegroup = cut(
+        age,
+        breaks = breaks,
+        right = FALSE,
+        include.lowest = TRUE,
+        labels = age_levels$agegroup
+      )
+    ) %>%
+    left_join(age_levels, by = "agegroup") %>%
+    group_by(sex, agegroup, midpoint) %>%
+    summarise(
+      n = sum(n),
+      n_pos = sum(n_pos),
+      prev = n_pos / n,
+      ci_lower = binom.confint(n_pos, n, conf.level = 0.95, methods = "wilson")$lower,
+      ci_upper = binom.confint(n_pos, n, conf.level = 0.95, methods = "wilson")$upper,
+      .groups = "drop"
+    ) %>%
+    arrange(sex, midpoint) %>%
+    mutate(
+      agegroup = factor(agegroup, levels = age_levels$agegroup),
+      sex = relevel(sex, ref = "Male")
+    )
+}
+
+sero_obs_3yr <- make_obs_age_groups(seroDatGrouped, width = 3)
+# or:
+# sero_obs_5yr <- make_obs_age_groups(seroDatGrouped, width = 5)
+
+sero_male_obs_plot <- sero_obs_3yr %>% filter(sex == "Male")
+sero_female_obs_plot <- sero_obs_3yr %>% filter(sex == "Female")
 
 # Plot: seroprevalence bars with CIs
 col_male   <- "#2c7bb6"
 col_female <- "#d7191c"
 
-seroprev_plot <- ggplot(seroDatGrouped, aes(x = agegroup, y = 100 * prev, fill = sex)) +
+seroprev_plot <- ggplot(sero_obs_3yr, aes(x = agegroup, y = 100 * prev, fill = sex)) +
   geom_col(position = position_dodge(width = 0.9), alpha = 0.5, colour = "black") +
   geom_errorbar(
     aes(ymin = 100 * ci_lower, ymax = 100 * ci_upper),
@@ -78,7 +135,7 @@ seroprev_plot <- ggplot(seroDatGrouped, aes(x = agegroup, y = 100 * prev, fill =
 
 seroprev_plot
 
-ggsave("outputs/figures/Fig2A_seroprev_by_age_sex.tiff", seroprev_plot, width = 10, height = 6, dpi = 500)
+# ggsave("outputs/figures/Fig2A_seroprev_by_age_sex.tiff", seroprev_plot, width = 10, height = 6, dpi = 500)
 
 
 ## ------------------------------------------------------
@@ -113,7 +170,6 @@ run_serocatalytic <- function(df_sex,
                               n_chains = 4,
                               n_adapt = 2000,
                               n_burn = 2000,
-                              n_samples_uncert = 1000,
                               age_range = 4:18,
                               out_prefix = NULL) {
   
@@ -193,28 +249,8 @@ run_serocatalytic <- function(df_sex,
     ci_upper = 1 - exp(-lambda_q["u95"]    *age_range)
   )
   
-  # 2) Sampling uncertainty: requires helper functions in catalyticModelFunctions.R
-  #    - mcmcRandomSamplerCat(n, mcmcMatrix, midpoints, totals)
-  #    - ageQuantiles(samples)
-  midpoints <- df_sex$age
-  totals    <- df_sex$n
-  
-  # sample the chain + add binomial sampling variability
-  sampled <- mcmcRandomSamplerCat(n_samples_uncert, mcmcMatrix, midpoints, totals)
-  aq <- ageQuantiles(sampled)
-  
-  df_sampling <- data.frame(
-    midpoint = df_sex$age,
-    prev  = 1 - exp(-df_sex$age * lambda_q["median"]),
-    ci_lower = aq[, 2],
-    ci_upper = aq[, 3]
-  )
-  
-  df_sampling <- extend_sampling_to_bounds(df_sampling, lower_age = 4, upper_age = 18)
-  
   # Save outputs for downstream plotting/panels
   saveRDS(df_mod,      paste0("outputs/models/", out_prefix, "_modelUncertainty.rds"))
-  saveRDS(df_sampling, paste0("outputs/models/", out_prefix, "_samplingUncertainty.rds"))
   saveRDS(lambda_q,    paste0("outputs/models/", out_prefix, "_lambda_quantiles.rds"))
   
   list(
@@ -226,8 +262,7 @@ run_serocatalytic <- function(df_sex,
     dic = dic,
     waic = waic_out,
     loo = loo_out,
-    df_mod = df_mod,
-    df_sampling = df_sampling
+    df_mod = df_mod
   )
 }
 
@@ -245,7 +280,6 @@ fit_male <- run_serocatalytic(
   n_chains = 4,
   n_adapt = 2000,
   n_burn = 2000,
-  n_samples_uncert = 1000,
   age_range = 4:18,
   out_prefix = "serocatalytic_male"
 )
@@ -270,7 +304,6 @@ fit_female <- run_serocatalytic(
   n_chains = 4,
   n_adapt = 2000,
   n_burn = 2000,
-  n_samples_uncert = 1000,
   age_range = 4:18,
   out_prefix = "serocatalytic_female"
 )
@@ -283,15 +316,96 @@ MCMCsummary(fit_female$jpos, round = 2) ## Check ESS and Rhat
 # point estimate and CIs
 lambdaEst_female <- fit_female$lambda_q
 lambdaEst_female
+
 # Loo and WAIC
 fit_female$loo
 fit_female$waic
 
-
 ## ------------------------------------------------------
 ## 6. Plot serocatalytic curves (male + female) + combine with seroprev bar plot #####
 ## ------------------------------------------------------
-make_serocatalytic_plot <- function(df_mod, df_sampling, df_obs, lambda_q, sex_label, col_fill) {
+
+# Get binomial sampling uncertainty for light shaded ribbon in plot
+make_sampling_uncertainty_for_plot <- function(df_obs_plot,
+                                               mcmcMatrix,
+                                               lambda_q,
+                                               n_samples_uncert = 1000,
+                                               lower_age = 4,
+                                               upper_age = 18) {
+  
+  sampled <- mcmcRandomSamplerCat(
+    n_samples_uncert,
+    mcmcMatrix,
+    df_obs_plot$midpoint,
+    df_obs_plot$n
+  )
+  
+  aq <- ageQuantiles(sampled)
+  
+  df_sampling <- data.frame(
+    midpoint = df_obs_plot$midpoint,
+    prev = 1 - exp(-lambda_q["median"] * df_obs_plot$midpoint),
+    ci_lower = aq[, 2],
+    ci_upper = aq[, 3]
+  ) %>%
+    mutate(
+      lower_width = prev - ci_lower,
+      upper_width = ci_upper - prev
+    )
+  
+  boundary_ages <- c(lower_age, upper_age)
+  boundary_prev <- 1 - exp(-lambda_q["median"] * boundary_ages)
+  
+  boundary_lower_width <- approx(
+    x = df_sampling$midpoint,
+    y = df_sampling$lower_width,
+    xout = boundary_ages,
+    rule = 2
+  )$y
+  
+  boundary_upper_width <- approx(
+    x = df_sampling$midpoint,
+    y = df_sampling$upper_width,
+    xout = boundary_ages,
+    rule = 2
+  )$y
+  
+  boundary_rows <- data.frame(
+    midpoint = boundary_ages,
+    prev = boundary_prev,
+    ci_lower = pmax(0, boundary_prev - boundary_lower_width),
+    ci_upper = pmin(1, boundary_prev + boundary_upper_width)
+  )
+  
+  bind_rows(
+    df_sampling %>% select(midpoint, prev, ci_lower, ci_upper),
+    boundary_rows
+  ) %>%
+    arrange(midpoint) %>%
+    distinct(midpoint, .keep_all = TRUE)
+}
+
+df_sampling_male_plot <- make_sampling_uncertainty_for_plot(
+  df_obs_plot = sero_male_obs_plot,
+  mcmcMatrix = fit_male$mcmcMatrix,
+  lambda_q = fit_male$lambda_q,
+  n_samples_uncert = 1000
+)
+
+df_sampling_female_plot <- make_sampling_uncertainty_for_plot(
+  df_obs_plot = sero_female_obs_plot,
+  mcmcMatrix = fit_female$mcmcMatrix,
+  lambda_q = fit_female$lambda_q,
+  n_samples_uncert = 1000
+)
+
+make_serocatalytic_plot <- function(df_mod,
+                                    df_obs,
+                                    lambda_q,
+                                    sex_label,
+                                    col_fill,
+                                    df_sampling = NULL,
+                                    show_sampling_uncertainty = FALSE) {
   
   FOI <- lambda_q
   AIP <- (1 - exp(-FOI)) * 100
@@ -303,18 +417,36 @@ make_serocatalytic_plot <- function(df_mod, df_sampling, df_obs, lambda_q, sex_l
     sprintf("%.2f", AIP["l95"]), "%, ", sprintf("%.2f", AIP["u95"]), "%)"
   )
   
-  ggplot(df_mod, aes(x = midpoint, y = 100 * prev)) +
-    geom_ribbon(aes(ymin = 100 * ci_lower, ymax = 100 * ci_upper), alpha = 0.3, fill = col_fill) +
-    geom_line(colour = "black") +
+  p <- ggplot(df_mod, aes(x = midpoint, y = 100 * prev))
+  
+  if (show_sampling_uncertainty && !is.null(df_sampling)) {
+    p <- p +
+      geom_ribbon(
+        data = df_sampling,
+        aes(x = midpoint, ymin = 100 * ci_lower, ymax = 100 * ci_upper),
+        inherit.aes = FALSE,
+        alpha = 0.2,
+        fill = col_fill
+      )
+  }
+  
+  p +
     geom_ribbon(
-      data = df_sampling,
-      aes(x = midpoint, ymin = 100 * ci_lower, ymax = 100 * ci_upper),
-      alpha = 0.30,
+      aes(ymin = 100 * ci_lower, ymax = 100 * ci_upper),
+      alpha = 0.35,
       fill = col_fill
     ) +
-    geom_point(data = df_obs, aes(x = midpoint, y = 100 * prev), inherit.aes = FALSE) +
-    geom_linerange(data = df_obs, aes(x = midpoint, ymin = 100 * ci_lower, ymax = 100 * ci_upper),
-                   inherit.aes = FALSE) +
+    geom_line(colour = "black") +
+    geom_point(
+      data = df_obs,
+      aes(x = midpoint, y = 100 * prev),
+      inherit.aes = FALSE
+    ) +
+    geom_linerange(
+      data = df_obs,
+      aes(x = midpoint, ymin = 100 * ci_lower, ymax = 100 * ci_upper),
+      inherit.aes = FALSE
+    ) +
     scale_x_continuous(breaks = seq(4, 18, by = 2), limits = c(4, 18)) +
     scale_y_continuous(breaks = seq(0, 100, by = 20), limits = c(0, 100)) +
     labs(x = "Age (years)", y = "Seroprevalence (%)") +
@@ -324,20 +456,22 @@ make_serocatalytic_plot <- function(df_mod, df_sampling, df_obs, lambda_q, sex_l
 
 catPlot_male <- make_serocatalytic_plot(
   df_mod      = fit_male$df_mod,
-  df_sampling = fit_male$df_sampling,
-  df_obs      = sero_male,
+  df_obs      = sero_male_obs_plot,
   lambda_q    = fit_male$lambda_q,
   sex_label   = "Male",
-  col_fill    = col_male
+  col_fill    = col_male,
+  df_sampling = df_sampling_male_plot,
+  show_sampling_uncertainty = TRUE # change to FALSE to remove light shaded binomial uncertainty
 )
 
 catPlot_female <- make_serocatalytic_plot(
   df_mod      = fit_female$df_mod,
-  df_sampling = fit_female$df_sampling,
-  df_obs      = sero_female,
+  df_obs      = sero_female_obs_plot,
   lambda_q    = fit_female$lambda_q,
   sex_label   = "Female",
-  col_fill    = col_female
+  col_fill    = col_female,
+  df_sampling = df_sampling_female_plot,
+  show_sampling_uncertainty = TRUE
 )
 
 # Combine into one figure (A: seroprev bars; B/C: serocatalytic)
@@ -354,8 +488,8 @@ bottom_row <- cowplot::plot_grid(
 
 Fig_sero_panel <- cowplot::plot_grid(top_row, bottom_row, ncol = 1, rel_heights = c(1, 1))
 Fig_sero_panel
-ggsave("outputs/figures/Fig2_seroprev_serocatalytic_panel.tiff", Fig_sero_panel,
-       width = 10, height = 10, dpi = 500)
+# ggsave("outputs/figures/Fig2_seroprev_serocatalytic_panel.tiff", Fig_sero_panel,
+       # width = 10, height = 10, dpi = 500)
 
 ## ------------------------------------------------------ 
 ## 7. Save key numeric outputs for manuscript text ####
