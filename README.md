@@ -21,6 +21,7 @@ The study investigates demographic, socioeconomic, environmental, and behavioura
 ├── scripts/
 │   ├── 01_setup_import_clean.R
 │   ├── 02_seroprev_serocatalytic.R
+│   ├── 02_seroprev_serocatalytic_individual.R
 │   ├── 03_female_piecewise_foi_sensitivity.R
 │   ├── 04_descriptive_gams_regression.R
 │   └── 05_spatial_analysis.R
