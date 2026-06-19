@@ -53,7 +53,7 @@ The study investigates demographic, socioeconomic, environmental, and behavioura
 ### `02_seroprev_serocatalytic.R`
 **Purpose**
 - Estimate age-specific seroprevalence  
-- Fit catalytic (force-of-infection) models stratified by sex  
+- Fit catalytic (force-of-infection) models stratified by sex to data aggregated in 3-year age groups  
 - Quantify uncertainty in seroprevalence and FOI estimates  
 
 **Key methods**
@@ -67,7 +67,7 @@ The study investigates demographic, socioeconomic, environmental, and behavioura
 ---
 
 ### `02_seroprev_serocatalytic_individual.R`
-Same as 02_seroprev_serocatalytic.R but for individual-level age data.
+Same as 02_seroprev_serocatalytic.R but for fitting the model to individual-level data
 
 ---
 
