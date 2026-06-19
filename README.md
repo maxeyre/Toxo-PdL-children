@@ -4,6 +4,8 @@ This repository contains the analysis code supporting the manuscript:
 
 **“Social marginalisation, environmental degradation and Toxoplasma gondii exposure in urban informal settlements in Brazil”**
 
+Citation: Eyre MT, Wang JY, Carneiro IdO, Reis RB, Wunder Jr EA, Júnior NN, et al. (2026) Social marginalisation, environmental degradation and Toxoplasma gondii exposure in urban informal settlements in Brazil. PLoS Negl Trop Dis 20(6): e0014453. https://doi.org/10.1371/journal.pntd.0014453
+
 The study investigates demographic, socioeconomic, environmental, and behavioural risk factors for *T. gondii* IgG seropositivity among children and adolescents living in a marginalised urban community, using serological data and a combination of regression, serocatalytic, and spatial statistical methods.
 
 ---
